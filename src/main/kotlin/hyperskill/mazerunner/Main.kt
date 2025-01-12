@@ -1,4 +1,4 @@
-package com.bk14er.kotlin.hyperskill.mazerunner
+package com.bk14er.hyperskill.mazerunner
 
 import java.io.File
 

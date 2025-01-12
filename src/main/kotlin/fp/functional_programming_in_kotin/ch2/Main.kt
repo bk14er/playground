@@ -1,4 +1,4 @@
-package com.bk14er.kotlin.fp.functional_programming_in_kotin.ch2
+package com.bk14er.fp.functional_programming_in_kotin.ch2
 
 
 object Example1 {
@@ -22,11 +22,11 @@ object Example1 {
     }
 
     fun formatAbs(x: Int): String {
-        return formatResult("absolute", x, ::abs)
+        return formatResult("absolute", x, Example1::abs)
     }
 
     fun formatFactorial(x: Int): String {
-        return formatResult("factorial", x, ::factorial)
+        return formatResult("factorial", x, Example1::factorial)
     }
 
     private fun formatResult(name: String, n: Int, f: (Int) -> Int): String {

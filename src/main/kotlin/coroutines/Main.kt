@@ -1,4 +1,4 @@
-package com.bk14er.kotlin.coroutines
+package com.bk14er.coroutines
 
 fun test(reciever: String.() -> Unit){
     "".reciever()
