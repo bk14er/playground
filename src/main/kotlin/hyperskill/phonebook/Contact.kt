@@ -1,4 +1,4 @@
-package phonebook
+package hyperskill.phonebook
 
 data class Contact(
     val name: String,

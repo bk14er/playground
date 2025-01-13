@@ -1,7 +1,7 @@
 package phonebook.operation
 
 import phonebook.PhoneBook
-import phonebook.Timer
+import hyperskill.phonebook.Timer
 import java.time.Duration
 
 class BubbleSort(private val timeout: Duration) : Operation {

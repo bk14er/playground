@@ -1,8 +1,9 @@
-package phonebook
+package hyperskill.phonebook
 
-import phonebook.Container.Companion.catch
+import hyperskill.phonebook.Container.Companion.catch
+import hyperskill.phonebook.search.*
+import phonebook.PhoneBook
 import phonebook.operation.*
-import phonebook.search.*
 import java.io.File
 import java.time.Duration
 

@@ -1,4 +1,4 @@
-package phonebook
+package hyperskill.phonebook
 
 import java.time.Duration
 

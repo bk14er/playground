@@ -1,4 +1,4 @@
-package com.bk14er.hyperskill.mazerunner
+package hyperskill.mazerunner
 
 import java.io.File
 

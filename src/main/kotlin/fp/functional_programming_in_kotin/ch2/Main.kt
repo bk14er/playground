@@ -1,4 +1,4 @@
-package com.bk14er.fp.functional_programming_in_kotin.ch2
+package fp.functional_programming_in_kotin.ch2
 
 
 object Example1 {
@@ -86,16 +86,17 @@ fun <A, B, C> compose(f: (B) -> C, g: (A) -> B): (A) -> C =
     { a -> f(g(a)) }
 
 fun main(args: Array<String>) {
-    val p1 = partial1(1) { a: Int, b: Int -> a + b }
+    val p1 = fp.functional_programming_in_kotin.ch3.partial1(1) { a: Int, b: Int -> a + b }
     println(p1(2)) // = 3
 
-    val curry = curry { a: Int, b: Int -> a + b }
+    val curry = fp.functional_programming_in_kotin.ch3.curry { a: Int, b: Int -> a + b }
     println(curry(1)(2)) // = 3
 
-    val uncurry = uncurry { a: Int -> { b: Int -> a + b } }
+    val uncurry = fp.functional_programming_in_kotin.ch3.uncurry { a: Int -> { b: Int -> a + b } }
     println(uncurry(1, 2)) // = 3
 
-    val compose = compose({ b: Int -> b * 2 }, { a: Int -> a * 2 })
+    val compose =
+        fp.functional_programming_in_kotin.ch3.compose({ b: Int -> b * 2 }, { a: Int -> a * 2 })
     println(compose(2)) // = 8
 
 }

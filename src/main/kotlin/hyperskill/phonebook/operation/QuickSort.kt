@@ -1,6 +1,6 @@
 package phonebook.operation
 
-import phonebook.Contact
+import hyperskill.phonebook.Contact
 import phonebook.PhoneBook
 
 class QuickSort : Operation {

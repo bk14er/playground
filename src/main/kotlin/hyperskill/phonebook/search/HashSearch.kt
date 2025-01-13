@@ -1,4 +1,4 @@
-package phonebook.search
+package hyperskill.phonebook.search
 
 import phonebook.PhoneBook
 

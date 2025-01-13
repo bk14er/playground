@@ -1,6 +1,6 @@
-package phonebook.search
+package hyperskill.phonebook.search
 
-import phonebook.Contact
+import hyperskill.phonebook.Contact
 import phonebook.PhoneBook
 import kotlin.math.floor
 import kotlin.math.min
