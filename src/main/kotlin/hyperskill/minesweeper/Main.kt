@@ -1,59 +1,44 @@
 package hyperskill.minesweeper
 
-import hyperskill.minesweeper.Cell.Mine
-import hyperskill.minesweeper.Cell.Unexplored
-import java.util.LinkedList
+import hyperskill.minesweeper.Cell.*
 
 private const val BOARD_WIDTH = 9
 
-data class CellState(val isVisible: Boolean = false, val isMarked: Boolean = false) {
-    fun makeVisible() = CellState(isVisible = true, isMarked = isMarked)
+sealed class Cell {
 
-    fun switchMarker() = CellState(isVisible = isVisible, isMarked = !isMarked)
-}
+    abstract fun display(): String
+    open fun freeMark(): Cell = this
+    open fun mineMark(): Cell = MarkedByPlayer(this)
 
-sealed class Cell(open val state: CellState) {
-
-    abstract fun value(): String
-
-    fun display(): String = when {
-        state.isMarked -> "*"
-        state.isVisible -> value()
-        else -> "."
+    data class Mine(val isRevealed: Boolean = false) : Cell() {
+        override fun display() = if (isRevealed) "X" else "."
+        override fun freeMark(): Cell = this.copy(isRevealed = true)
     }
 
-    fun freeMark(): Cell = when (this) {
-        is Unexplored -> Visited(state = state.makeVisible())
-        is Count -> this.copy(state = state.makeVisible())
-        else -> this
+    data class Count(val count: Int, val isRevealed: Boolean = false) : Cell() {
+        override fun display() = if (isRevealed) count.toString() else "."
+        override fun freeMark(): Cell = this.copy(isRevealed = true)
     }
 
-    fun mineMark(): Cell = when (this) {
-        is Visited -> this.copy(state = state.switchMarker())
-        is Mine -> this.copy(state = state.switchMarker().makeVisible())
-        is Count -> this.copy(state = state.switchMarker())
-        else -> this
+    object Empty : Cell() {
+        override fun display() = "."
+        override fun freeMark(): Cell = Visited
     }
 
-    data class Mine(override val state: CellState = CellState()) : Cell(state) {
-        override fun value(): String = "X"
+    object Visited : Cell() {
+        override fun display() = "/"
     }
 
-    data class Count(val counter: Char, override val state: CellState = CellState()) : Cell(state) {
-        override fun value(): String = counter.toString()
+    data class MarkedByPlayer(val holder: Cell) : Cell() {
+        override fun display() = "*"
+        override fun mineMark(): Cell = holder
+        override fun freeMark(): Cell = holder.freeMark()
     }
-
-    data class Visited(override val state: CellState) : Cell(state) {
-        override fun value(): String = "/"
-    }
-
-    data object Unexplored : Cell(state = CellState()) {
-        override fun value(): String = "."
-    }
-
 }
 
 data class Crd(val r: Int = 0, val c: Int = 0) {
+
+    fun to() = r to c
 
     fun adjacentOffsets() = listOf(
         Crd(r - 1, c - 1),
@@ -66,39 +51,16 @@ data class Crd(val r: Int = 0, val c: Int = 0) {
         Crd(r + 1, c + 1),
     ).filter { it.isValid() }
 
-    fun allWays() = listOf(
-        Crd(r, c - 1),
-        Crd(r, c + 1),
-        Crd(r - 1, c),
-        Crd(r + 1, c)
-    ).filter { it.isValid() }
-
-
     private fun isValid() = r in 0 until BOARD_WIDTH && c in 0 until BOARD_WIDTH
 
 }
 
 class GameBoard(
+    private val mines: Int,
     private val board: List<MutableList<Cell>> = List(BOARD_WIDTH) {
-        MutableList(BOARD_WIDTH) { Unexplored }
+        MutableList(BOARD_WIDTH) { Empty }
     },
 ) {
-
-    fun addMines(mineCount: Int): GameBoard {
-        val allPositions = (board.indices).flatMap { row ->
-            board[row].indices.map { col -> row to col }
-        }
-
-        val mineSet = allPositions.shuffled().take(mineCount).toSet()
-
-        val updatedBoard = board.mapIndexed { row, line ->
-            line.mapIndexed { col, cell ->
-                if ((row to col) in mineSet) Mine() else cell
-            }.toMutableList()
-        }
-
-        return GameBoard(updatedBoard).calculateMines()
-    }
 
     fun print() {
         val header = (1..BOARD_WIDTH).joinToString("") // Generate column numbers
@@ -120,10 +82,10 @@ class GameBoard(
         val boardLinear = board.flatten()
 
         val noMineLeft = boardLinear.count { it is Mine } == 0
-        val unExplodedLeft = boardLinear.count { it is Unexplored } == 0
+        val noEmptyCell = boardLinear.count { it is Empty } == 0
 
         if (noMineLeft) {
-            return unExplodedLeft
+            return noEmptyCell
         }
 
         return false
@@ -135,34 +97,65 @@ class GameBoard(
 
     operator fun set(crd: Crd, cell: Cell) = cell.also { board[crd.r][crd.c] = it }
 
-    fun markCrd(crd: Crd, cmd: String): GameBoard {
-        val selectedCell = this[crd]
+    private fun handleMineSelection(crd: Crd) {
+        this[crd] = this[crd].mineMark()
+    }
 
-        if (cmd == "mine") {
-            this[crd] = selectedCell.mineMark()
-            return this.also { it.print() }
-        }
-
-        // free cmd:
-        if (selectedCell is Mine) {
+    private fun handleFreeSelection(crd: Crd){
+        if (this[crd] is Mine) {
             error("You stepped on a mine and failed!")
         }
 
-        val queue = LinkedList<Crd>()
+        val queue = ArrayDeque<Crd>()
         queue.add(crd)
 
+        // Flood fill algorithm
+        // for automatic cell visit
         while (queue.isNotEmpty()) {
-            val crd = queue.poll()
+            val crd = queue.removeLast()
             val cell = this[crd]
 
-            if (cell is Unexplored) {
-                queue.addAll(crd.allWays())
+            if (cell is Empty) {
+                queue.addAll(crd.adjacentOffsets())
+            } else if (cell is MarkedByPlayer && cell.holder is Empty) {
+                queue.addAll(crd.adjacentOffsets())
             }
 
             this[crd] = cell.freeMark()
         }
 
-        return this.also { it.print() }
+    }
+
+    fun markCrd(crd: Crd, action: String) = when (action) {
+        "mine" -> handleMineSelection(crd)
+        "free" -> handleFreeSelection(crd)
+        else -> error("Unknown $action action for cell $crd ")
+    }
+
+    fun addMines(): GameBoard {
+        val allPositions = (board.indices).flatMap { row ->
+            board[row].indices.map { col -> row to col }
+        }
+
+        val mineSet = allPositions.shuffled().take(mines).toSet()
+
+        val updatedBoard = board.mapIndexed { row, line ->
+            line.mapIndexed { col, cell ->
+                if ((row to col) in mineSet) Mine() else cell
+            }.toMutableList()
+        }
+
+        return GameBoard(mines, updatedBoard).calculateMines()
+    }
+
+    fun revealMines(): GameBoard {
+        val newBoard = board.mapIndexed { row, line ->
+            line.mapIndexed { col, cell ->
+                if (cell is Mine) Mine(true) else cell
+            }.toMutableList()
+        }
+
+        return GameBoard(mines, newBoard)
     }
 
     private fun calculateMines(): GameBoard {
@@ -180,42 +173,67 @@ class GameBoard(
 
                 // Update the cell based on adjacent mines
                 when {
-                    adjacentMineCount > 0 -> Cell.Count('0' + adjacentMineCount)
+                    adjacentMineCount > 0 -> Count(adjacentMineCount)
                     else -> cell
                 }
             }.toMutableList()
         }
-        return GameBoard(newBoard)
+        return GameBoard(mines, newBoard)
     }
 
 }
 
-fun main() {
-    val mines = generateSequence {
-        print("How many mines do you want on the field? ")
-        readlnOrNull()?.toIntOrNull()?.takeIf { it > 0 }
-            ?: run { println("Please enter a positive integer."); null }
-    }.first()
-
-    val board = GameBoard().addMines(mines).also { it.print() }
-
+private fun promptForMines() = run {
+    var mines: Int?
     do {
-        val (x, y, cmd) = generateSequence {
-            print("Set/unset mines marks or claim a cell as free")
-            readlnOrNull()?.trim()?.split(" ")
-        }.first()
+        "How many mines do you want on the field? ".let(::println)
+        mines = readlnOrNull()?.toIntOrNull()
+    } while (mines == null)
+    mines
+}
 
-        val result = runCatching { board.markCrd(Crd(y.toInt() - 1, x.toInt() - 1), cmd) }
+private fun promptForAction(): Pair<Pair<Int, Int>, String> {
+    "Set/unset mine marks or claim a cell as free: ".let(::println)
+    val input = readln().split(" ")
+    val result = parseActionInput(input)
+    return result ?: promptForAction()
+}
 
-        if (result.isFailure) {
-            result.exceptionOrNull()?.message?.also { println(it) }
-            return
-        }
+private fun parseActionInput(input: List<String>) = when (input.size) {
+    3 -> {
+        val row = input[0].toIntOrNull()?.minus(1)
+        val column = input[1].toIntOrNull()?.minus(1)
+        val command = input[2].lowercase()
+        if (row != null && column != null && (command == "mine" || command == "free")) Pair(
+            Pair(
+                column,
+                row
+            ), command
+        )
+        else null
+    }
 
-    } while (!board.isResolved())
+    else -> null
+}
 
+private fun handleGameOver(exception: Throwable, board: GameBoard) {
+    exception.localizedMessage.let(::println)
+    board.revealMines().print()
+}
+
+private fun play(board: GameBoard) = runCatching {
+    while (!board.isResolved()) {
+        board.print()
+        val (coordinates, cmd) = promptForAction()
+        val (x, y) = coordinates
+        board.markCrd(Crd(x, y), cmd)
+    }
     board.print()
     println("Congratulations! You found all the mines!")
+}.getOrElse { handleGameOver(it, board) }
+
+fun main() {
+    play(GameBoard(promptForMines()).addMines())
 }
 
 
