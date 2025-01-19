@@ -101,7 +101,7 @@ class GameBoard(
         this[crd] = this[crd].mineMark()
     }
 
-    private fun handleFreeSelection(crd: Crd){
+    private fun handleFreeSelection(crd: Crd) {
         if (this[crd] is Mine) {
             error("You stepped on a mine and failed!")
         }
@@ -149,13 +149,11 @@ class GameBoard(
     }
 
     fun revealMines(): GameBoard {
-        val newBoard = board.mapIndexed { row, line ->
-            line.mapIndexed { col, cell ->
+        return GameBoard(mines, board.mapIndexed { row, line ->
+            line.mapIndexed { _, cell ->
                 if (cell is Mine) Mine(true) else cell
             }.toMutableList()
-        }
-
-        return GameBoard(mines, newBoard)
+        })
     }
 
     private fun calculateMines(): GameBoard {

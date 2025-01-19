@@ -1,9 +1,20 @@
 package fp.functional_programming_in_kotin.ch3
 
 import fp.functional_programming_in_kotin.ch3.List.Companion.append
+import fp.functional_programming_in_kotin.ch3.List.Companion.appendFoldL
+import fp.functional_programming_in_kotin.ch3.List.Companion.appendFoldR
+import fp.functional_programming_in_kotin.ch3.List.Companion.concatL
+import fp.functional_programming_in_kotin.ch3.List.Companion.concatR1
+import fp.functional_programming_in_kotin.ch3.List.Companion.concatR2
 import fp.functional_programming_in_kotin.ch3.List.Companion.drop
 import fp.functional_programming_in_kotin.ch3.List.Companion.dropWhile
+import fp.functional_programming_in_kotin.ch3.List.Companion.foldLeft
+import fp.functional_programming_in_kotin.ch3.List.Companion.foldLeftR
+import fp.functional_programming_in_kotin.ch3.List.Companion.foldLeftRDemystified
+import fp.functional_programming_in_kotin.ch3.List.Companion.foldRightL
 import fp.functional_programming_in_kotin.ch3.List.Companion.init
+import fp.functional_programming_in_kotin.ch3.List.Companion.length
+import fp.functional_programming_in_kotin.ch3.List.Companion.reverse
 import fp.functional_programming_in_kotin.ch3.List.Companion.setHead
 import fp.functional_programming_in_kotin.ch3.List.Companion.tail
 import io.kotest.assertions.throwables.shouldThrow
@@ -11,6 +22,8 @@ import io.kotest.core.spec.style.WordSpec
 import io.kotest.matchers.shouldBe
 
 class ListTest : WordSpec({
+
+
     "list tail" should {
         "return the the tail when present" {
             tail(List.of(1, 2, 3, 4, 5)) shouldBe
@@ -102,6 +115,114 @@ class ListTest : WordSpec({
             }
         }
 
+    }
+
+    "list length" should {
+        "calculate the length" {
+            length(List.of(1, 2, 3, 4, 5)) shouldBe 5
+        }
+
+        "calculate zero for an empty list" {
+            length(Nil) shouldBe 0
+        }
+    }
+
+    "list foldLeft" should {
+        """apply a function f providing a zero accumulator from tail
+            recursive position""" {
+            foldLeft(
+                List.of(1, 2, 3, 4, 5),
+                0,
+                { x, y -> x + y }) shouldBe 15
+        }
+    }
+
+    "list sumL" should {
+        "add all integers" {
+            sumL(List.of(1, 2, 3, 4, 5)) shouldBe 15
+        }
+    }
+
+    "list productL" should {
+        "multiply all doubles" {
+            productL(List.of(1.0, 2.0, 3.0, 4.0, 5.0)) shouldBe 120.0
+        }
+    }
+
+    "list lengthL" should {
+        "count the list elements" {
+            lengthL(List.of(1, 2, 3, 4, 5)) shouldBe 5
+        }
+    }
+
+    "list reverse" should {
+        "reverse list elements" {
+            reverse(List.of(1, 2, 3, 4, 5)) shouldBe
+                    List.of(5, 4, 3, 2, 1)
+        }
+    }
+
+    "list foldLeftR" should {
+        "implement foldLeft functionality using foldRight" {
+            foldLeftR(
+                List.of(1, 2, 3, 4, 5),
+                0,
+                { x, y -> x + y }) shouldBe 15
+            foldLeftRDemystified(
+                List.of(1, 2, 3, 4, 5),
+                0,
+                { x, y -> x + y }) shouldBe 15
+        }
+    }
+
+    "list foldRightL" should {
+        "implement foldRight functionality using foldLeft" {
+            foldRightL(
+                List.of(1, 2, 3, 4, 5),
+                0,
+                { x, y -> x + y }) shouldBe 15
+        }
+    }
+
+    "list appendFoldR" should {
+        "append two lists to each other using foldRight" {
+            appendFoldR(
+                List.of(1, 2, 3),
+                List.of(4, 5, 6)
+            ) shouldBe List.of(1, 2, 3, 4, 5, 6)
+        }
+    }
+    "list appendFoldL" should {
+        "append two lists to each other using foldLeft" {
+            appendFoldL(
+                List.of(1, 2, 3),
+                List.of(4, 5, 6)
+            ) shouldBe List.of(1, 2, 3, 4, 5, 6)
+        }
+    }
+
+    "list concat" should {
+        "concatenate a list of lists into a single list" {
+            concatR1(
+                List.of(
+                    List.of(1, 2, 3),
+                    List.of(4, 5, 6)
+                )
+            ) shouldBe List.of(1, 2, 3, 4, 5, 6)
+            concatR2(
+                List.of(
+                    List.of(1, 2, 3),
+                    List.of(4, 5, 6)
+                )
+            ) shouldBe List.of(1, 2, 3, 4, 5, 6)
+
+            concatL(
+                List.of(
+                    List.of(1, 2, 3),
+                    List.of(4, 5, 6)
+                )
+            ) shouldBe List.of(1, 2, 3, 4, 5, 6)
+        }
     }
 
 })
