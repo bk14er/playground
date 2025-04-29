@@ -14,12 +14,14 @@ import fp.functional_programming_in_kotin.ch3.List.Companion.foldLeftRDemystifie
 import fp.functional_programming_in_kotin.ch3.List.Companion.foldRightL
 import fp.functional_programming_in_kotin.ch3.List.Companion.init
 import fp.functional_programming_in_kotin.ch3.List.Companion.length
+import fp.functional_programming_in_kotin.ch3.List.Companion.map
 import fp.functional_programming_in_kotin.ch3.List.Companion.reverse
 import fp.functional_programming_in_kotin.ch3.List.Companion.setHead
 import fp.functional_programming_in_kotin.ch3.List.Companion.tail
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.WordSpec
 import io.kotest.matchers.shouldBe
+import org.assertj.core.internal.bytebuddy.implementation.bytecode.member.MethodVariableAccess.increment
 
 class ListTest : WordSpec({
 
@@ -137,15 +139,23 @@ class ListTest : WordSpec({
         }
     }
 
-    "list sumL" should {
-        "add all integers" {
+    "list sum" should {
+        "sum add all integers" {
+            sum(List.of(1, 2, 3, 4, 5)) shouldBe 15
+        }
+        "sumL add all integers" {
             sumL(List.of(1, 2, 3, 4, 5)) shouldBe 15
+        }
+        "sumR add all integers" {
+            sumR(List.of(1, 2, 3, 4, 5)) shouldBe 15
         }
     }
 
-    "list productL" should {
+    "list product" should {
         "multiply all doubles" {
+            product(List.of(1.0, 2.0, 3.0, 4.0, 5.0)) shouldBe 120.0
             productL(List.of(1.0, 2.0, 3.0, 4.0, 5.0)) shouldBe 120.0
+            productR(List.of(1.0, 2.0, 3.0, 4.0, 5.0)) shouldBe 120.0
         }
     }
 
@@ -192,6 +202,7 @@ class ListTest : WordSpec({
             ) shouldBe List.of(1, 2, 3, 4, 5, 6)
         }
     }
+
     "list appendFoldL" should {
         "append two lists to each other using foldLeft" {
             appendFoldL(
@@ -222,6 +233,29 @@ class ListTest : WordSpec({
                     List.of(4, 5, 6)
                 )
             ) shouldBe List.of(1, 2, 3, 4, 5, 6)
+        }
+    }
+
+    "list increment" should {
+        "add 1 to every element" {
+            increment(
+                List.of(1, 2, 3, 4, 5)
+            ) shouldBe List.of(2, 3, 4, 5, 6)
+        }
+    }
+
+    "list map" should {
+        "apply a function to every list element" {
+            map(List.of(1, 2, 3, 4, 5)) { it * 10 } shouldBe
+                    List.of(10, 20, 30, 40, 50)
+        }
+    }
+
+    "list doubleToString" should {
+        "convert every double element to a string" {
+            doubleToString(
+                List.of(1.1, 1.2, 1.3, 1.4)
+            ) shouldBe List.of("1.1", "1.2", "1.3", "1.4")
         }
     }
 

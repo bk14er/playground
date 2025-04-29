@@ -1,5 +1,6 @@
 package fp.functional_programming_in_kotin.ch3
 
+import fp.functional_programming_in_kotin.ch3.List.Companion.empty
 import fp.functional_programming_in_kotin.ch3.List.Companion.foldLeft
 import fp.functional_programming_in_kotin.ch3.List.Companion.foldRight
 
@@ -99,24 +100,16 @@ sealed class List<out A> {
          * foldRight and a technique called function composition.
          * The core idea is to transform the accumulator logic into a series of nested function calls
          *
-         *     Implementation: Uses foldRight with function composition to achieve a left fold.
+         * Implementation: Uses foldRight with function composition to achieve a left fold.
+         * Order: Processes the list from right to left but accumulates from left to right.
+         * Complexity: Involves nested functions and may be less efficient.
          *
-         *     Order: Processes the list from right to left but accumulates from left to right.
-         *
-         *     Complexity: Involves nested functions and may be less efficient.
-         *
-         *     Example:
-         *
+         *  Example:
          *         List: [1, 2, 3]
-         *
          *         Function: (b, a) -> b + a
-         *
          *         Calculation:
-         *
          *             Build a function composition: { b -> f(f(f(b, 1), 2), 3) }
-         *
          *             Apply to z = 0: f(f(0 + 1, 2), 3) = f(1 + 2, 3) = 3 + 3 = 6
-         *
          *         Result: 6
          */
         fun <A, B> foldLeftR(xs: List<A>, z: B, f: (B, A) -> B): B =
@@ -128,27 +121,17 @@ sealed class List<out A> {
 
 
         /**
-         * The foldRightL function processes the list from right to left by using
-         * foldLeft.
          *
-         *     Implementation: Uses foldLeft with function composition to achieve a right fold.
+         *  Implementation: Uses foldLeft with function composition to achieve a right fold.
+         *  Order: Processes the list from left to right but accumulates from right to left.
+         *  Complexity: Involves nested functions and may be less efficient.
          *
-         *     Order: Processes the list from left to right but accumulates from right to left.
-         *
-         *     Complexity: Involves nested functions and may be less efficient.
-         *
-         *     Example:
-         *
+         *  Example:
          *         List: [1, 2, 3]
-         *
          *         Function: (a, b) -> a + b
-         *
          *         Calculation:
-         *
          *             Build a function composition: { b -> f(1, f(2, f(3, b))) }
-         *
          *             Apply to z = 0: f(1, f(2, f(3, 0))) = f(1, f(2, 3)) = f(1, 5) = 6
-         *
          *         Result: 6
          */
         fun <A, B> foldRightL(xs: List<A>, z: B, f: (A, B) -> B): B =
@@ -202,6 +185,11 @@ sealed class List<out A> {
         fun <A> concatL(xxs: List<List<A>>): List<A> = foldLeft(xxs, empty(), { b, a ->
             append(b, a)
         })
+
+        fun <A, B> map(xs: List<A>, f: (A) -> B): List<B> =
+            foldRightL(xs, empty()) { a: A, xa: List<B> ->
+                Cons(f(a), xa)
+            }
     }
 
 }
@@ -214,18 +202,30 @@ data class Cons<out A>(val head: A, val tail: List<A>) : List<A>()
 
 fun sum(xs: List<Int>): Int = foldRight(xs, 0, { a, b -> a + b })
 
-fun sumL(xs: List<Int>): Int = foldLeft(xs, 0, { a, b -> a + b })
-
 fun product(xs: List<Double>): Double = foldRight(xs, 1.0, { a, b -> a * b })
+
+fun sumL(xs: List<Int>): Int = foldLeft(xs, 0, { b, a -> a + b })
+
+fun sumR(xs: List<Int>): Int = foldRight(xs, 0, { a, b -> a + b })
 
 fun productL(xs: List<Double>): Double = foldLeft(xs, 1.0, { a, b -> a * b })
 
+fun productR(xs: List<Double>): Double = foldRight(xs, 1.0, { a, b -> a * b })
+
 fun lengthL(xs: List<Int>): Int = foldLeft(xs, 0, { acc, _ -> acc + 1 })
+
+fun increment(xs: List<Int>): List<Int> = foldRight(
+    xs, empty(), { a, b -> Cons(a + 1, b) }
+)
+
+fun doubleToString(xs: List<Double>): List<String> = foldRight(xs, empty(), { a, b ->
+    Cons(a.toString(), b)
+})
 
 val f = { x: Int, y: List<Int> -> Cons(x, y) }
 val z = Nil as List<Int>
 
-val tracefoldRight = {
+val traceFoldRight = {
     foldRight(List.of(1, 2, 3), z, f)
     Cons(1, foldRight(List.of(2, 3), z, f))
     Cons(1, Cons(2, foldRight(List.of(3), z, f)))
