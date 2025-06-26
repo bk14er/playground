@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package io.mdu.noteservice;
+
+option java_package = "io.mdu.grpc.noteservice";
+option java_multiple_files = true;
+
+import "google/protobuf/wrappers.proto";
+
+service NoteService {
+  rpc CreateNote (CreateNoteRequest) returns (Note);
+  rpc StreamNotesByTag (NoteTagFilter) returns (stream Note);
+  rpc CreateNotes (stream Note) returns (NoteBatchSummary);
+  rpc NoteCollab (stream Note) returns (stream Note);
+}
+
+message CreateNoteRequest {
+  string title = 1;
+  optional string content = 2;
+  repeated string tags = 3;
+  NoteStatus status = 4;
+  map<string, string> metadata = 5;
+  Attachment attachment = 6;
+  Author author = 7;
+}
+
+message NoteTagFilter {
+  string tag = 1;
+}
+
+message NoteBatchSummary {
+  int32 count = 1;
+}
+
+message Note {
+  string id = 1;
+  string title = 2;
+  optional string content = 3;
+  repeated string tags = 4;
+  NoteStatus status = 5;
+  map<string, string> metadata = 6;
+  Attachment attachment = 7;
+  NoteMetadata metadata_details = 8;
+  Author author = 9;
+  Timestamps timestamps = 10;
+}
+
+message Author {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+}
+
+message Timestamps {
+  string created_at = 1;
+  string updated_at = 2;
+}
+
+enum NoteStatus {
+  UNKNOWN = 0;
+  ACTIVE = 1;
+  ARCHIVED = 2;
+}
+
+message NoteMetadata {
+  google.protobuf.Int32Value word_count = 1;
+}
+
+message Attachment {
+  oneof source {
+    string file_path = 1;
+    string url = 2;
+  }
+}

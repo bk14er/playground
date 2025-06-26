@@ -21,7 +21,6 @@ import fp.functional_programming_in_kotin.ch3.List.Companion.tail
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.WordSpec
 import io.kotest.matchers.shouldBe
-import org.assertj.core.internal.bytebuddy.implementation.bytecode.member.MethodVariableAccess.increment
 
 class ListTest : WordSpec({
 

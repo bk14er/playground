@@ -1,6 +1,7 @@
 package leetcode._2044
 
 import leetcode.AlgoMetrics.measureTimeAndPrint
+import leetcode.AlgoMetrics.runTests
 import java.util.BitSet
 import kotlin.math.min
 
@@ -129,20 +130,4 @@ fun main() {
     println("Running bitmask solution:")
     runTests("Bitmask", testCases, ::countMaxOrSubsetsBitMask)
 
-}
-
-private fun runTests(
-    testType: String,
-    testCases: List<Triple<String, IntArray, Int>>,
-    testFunc: (IntArray) -> Int,
-) {
-    for ((name, nums, expected) in testCases) {
-        measureTimeAndPrint("$testType: $name") {
-            val result = runCatching { check(testFunc(nums) == expected) { "Test $name failed!" } }
-
-            if(result.isFailure){
-                println("Error for $testCases ${result.exceptionOrNull()}")
-            }
-        }
-    }
 }

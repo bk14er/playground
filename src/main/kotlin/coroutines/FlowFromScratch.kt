@@ -12,8 +12,9 @@ suspend fun main(): Unit = coroutineScope {
         emit("C")
     }
 
-    flow.collect{ print(it) }
-    flow.collect{ print(it) }
+    val collector : FlowCollector<String> = FlowCollector { print(it) }
+    flow.collect(collector)
+    flow.collect(collector)
 
 }
 
