@@ -20,7 +20,7 @@ class ListNode(var `val`: Int) {
 
 }
 
-fun addTwoNumbers(l1: ListNode?, l2: ListNode?): ListNode? {
+fun addTwoNumbersRecursive(l1: ListNode?, l2: ListNode?): ListNode? {
     if (l1 == null && l2 == null) {
         return null
     }
@@ -31,41 +31,86 @@ fun addTwoNumbers(l1: ListNode?, l2: ListNode?): ListNode? {
 
     if (carry > 0) {
         current.next =
-            addTwoNumbers(l1?.next, l2?.next?.apply { `val` += carry } ?: ListNode(carry))
+            addTwoNumbersRecursive(l1?.next, l2?.next?.apply { `val` += carry } ?: ListNode(carry))
     } else {
-        current.next = addTwoNumbers(l1?.next, l2?.next?.apply { `val` += carry })
+        current.next = addTwoNumbersRecursive(l1?.next, l2?.next?.apply { `val` += carry })
     }
 
 
     return current
 }
 
-fun main() {
+fun addTwoNumbersIterative(l1: ListNode?, l2: ListNode?): ListNode? {
+    val dummyHead = ListNode(0)
+    var current = dummyHead
 
-    println(addTwoNumbers(ListNode(1), ListNode(2)))
+    var carry = 0
+    var it1 = l1
+    var it2 = l2
+
+    while (carry > 0 || it1 != null || it2 != null) {
+        val sum = (it1?.`val` ?: 0) + (it2?.`val` ?: 0)  + carry
+        carry = sum / 10
+        val digit = (sum % 10)
+
+        current.next = ListNode(digit)
+        current = current.next!!
+
+        it1 = it1?.next
+        it2 = it2?.next
+    }
+
+    return dummyHead.next
+}
+
+fun main() {
+    println(addTwoNumbersRecursive(ListNode(1), ListNode(2)))
+    println(addTwoNumbersIterative(ListNode(1), ListNode(2)))
+    println()
 
     println(
-        addTwoNumbers(
-            ListNode(2).apply { next = ListNode(4).apply { next = ListNode(3) } },
+        addTwoNumbersRecursive(
+            ListNode(2).apply {
+                next = ListNode(4).apply { next = ListNode(3) }
+            },
             ListNode(5).apply { next = ListNode(6).apply { next = ListNode(4) } })
     )
+    println(
+        addTwoNumbersIterative(
+            ListNode(2).apply {
+                next = ListNode(4).apply { next = ListNode(3) }
+            },
+            ListNode(5).apply { next = ListNode(6).apply { next = ListNode(4) } })
+    )
+    println()
 
 
     println(
-        addTwoNumbers(
-            ListNode(2).apply {
+        addTwoNumbersRecursive(ListNode(2).apply {
+            next = ListNode(4).apply {
+                next = ListNode(9)
+            }
+        }, ListNode(5).apply {
+            next = ListNode(6).apply {
                 next = ListNode(4).apply {
                     next = ListNode(9)
                 }
-            },
-            ListNode(5).apply {
-                next = ListNode(6).apply {
-                    next = ListNode(4).apply {
-                        next = ListNode(9)
-                    }
-                }
-            })
+            }
+        })
     )
-
+    println(
+        addTwoNumbersIterative(ListNode(2).apply {
+            next = ListNode(4).apply {
+                next = ListNode(9)
+            }
+        }, ListNode(5).apply {
+            next = ListNode(6).apply {
+                next = ListNode(4).apply {
+                    next = ListNode(9)
+                }
+            }
+        })
+    )
+    println()
 
 }
